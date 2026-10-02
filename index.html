@@ -78,7 +78,7 @@
         /* 共通設定グリッド */
         .grid-common {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 16px;
             margin-bottom: 20px;
             background: #f1f5f9;
@@ -114,6 +114,13 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
+        .help-text {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+            line-height: 1.3;
+        }
+
         /* アラート・ガイドボックス */
         .info-box {
             background: #eff6ff;
@@ -129,7 +136,7 @@
             background: var(--success-bg);
             border: 1px solid #bbf7d0;
             color: #14532d;
-            padding: 16px 20px;
+            padding: 18px 20px;
             border-radius: 10px;
             font-size: 0.88rem;
             margin-bottom: 28px;
@@ -138,15 +145,15 @@
 
         .guide-title {
             font-weight: bold;
-            font-size: 0.95rem;
-            margin-bottom: 10px;
+            font-size: 0.98rem;
+            margin-bottom: 12px;
             color: #14532d;
             border-bottom: 1px dashed #86efac;
             padding-bottom: 6px;
         }
 
         .guide-item {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .guide-item:last-child {
@@ -357,6 +364,7 @@
                 <option value="indoor">屋内（露出・隠ぺい配管）</option>
                 <option value="outdoor" selected>屋外（露出・耐候性配管必須）</option>
             </select>
+            <span class="help-text">※屋外配管の場合は耐候性PF管・G管・VE管等の選定が必須です。</span>
         </div>
         <div class="form-group">
             <label for="temp">周囲温度</label>
@@ -367,29 +375,45 @@
                 <option value="45">45°C（補正0.82）</option>
                 <option value="50">50°C（高熱環境 補正0.75）</option>
             </select>
+            <span class="help-text">※基底温度30°Cを超える環境では許容電流の低減補正が必要です。</span>
         </div>
         <div class="form-group">
             <label for="fillRate">管占積率の目標上限</label>
             <select id="fillRate">
-                <option value="0.32" selected>32%以下（標準・屈曲あり/異種混在）</option>
-                <option value="0.48">48%以下（直線部・短尺・同一電線）</option>
+                <option value="0.32" selected>32%以下（原則標準・屈曲部あり/異種混在）</option>
+                <option value="0.48">48%以下（特例・直線部/短尺/同一電線）</option>
             </select>
+            <span class="help-text">※内線規程 第3110節：通常施工は32%以下、直線短尺部は48%以下を適用。</span>
         </div>
         <div class="form-group">
             <label for="volDrop">許容電圧降下の目標上限</label>
             <select id="volDrop">
-                <option value="2.0" selected>2.0%以下（標準・高圧受電/短距離）</option>
+                <option value="2.0" selected>2.0%以下（標準・高圧受電/低圧短距離）</option>
                 <option value="3.0">3.0%以下（低圧受電・標準距離）</option>
                 <option value="4.0">4.0%以下（低圧受電・長距離 60m超）</option>
                 <option value="5.0">5.0%以下（低圧受電・長距離 120m超〜200m）</option>
             </select>
+            <span class="help-text">※内線規程 第1310節：受電方式と幹線・分岐配線長に応じた許容値を設定。</span>
         </div>
     </div>
 
     <!-- 選定ガイドライン -->
     <div class="guide-box">
-        <div class="guide-title">📖 内線規程・技術基準に基づく判定ルール解説</div>
+        <div class="guide-title">📖 内線規程・技術基準に基づく選定・判定ルール解説</div>
         
+        <div class="guide-item">
+            <strong>【管占積率の基準（内線規程 第3110節等）】</strong><br>
+            ・<strong>32%以下（標準）</strong>：配管内に屈曲（曲がり）がある場合や、太さ・種類の異なる電線/ケーブルを混在収容する原則基準。通線時の被覆損傷を防ぎます。<br>
+            ・<strong>48%以下（特例）</strong>：屈曲のない直線配管で比較的短尺（概ね6m以下）の場合や、同一太さの電線のみを収容する特例施工時に適用可能です。
+        </div>
+
+        <div class="guide-item">
+            <strong>【許容電圧降下の基準（内線規程 第1310節 / 電技解釈）】</strong><br>
+            ・<strong>2.0%以下</strong>：高圧受電（自家用電気工作物）における変圧器二次側から負荷に至る標準許容値。<br>
+            ・<strong>3.0%以下</strong>：低圧受電における引込口から負荷に至る標準値（標準距離）。<br>
+            ・<strong>4.0%以下 / 5.0%以下</strong>：低圧受電で線路長が長距離となる場合（60m超で4.0%、120m超〜200mで5.0%）の例外許容値。
+        </div>
+
         <div class="guide-item">
             <strong>【一般負荷（ヒーター・照明等）】</strong><br>
             ・適合条件：<code>負荷電流 (I) ≤ ブレーカ定格 (IB) ≤ 電線補正許容電流 (I_derated)</code>
@@ -1006,6 +1030,10 @@ function exportToCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+</script>
+</body>
+</html>
 }
 </script>
 </body>
