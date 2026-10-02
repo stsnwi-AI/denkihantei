@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>600V低圧配線対応 複数配管・複数回路自動選定＆内線規程判定ツール</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            --success: #15803d;
+            --success-bg: #f0fdf4;
+            --danger: #b91c1c;
+            --danger-bg: #fef2f2;
+            --warning: #d97706;
+            --warning-bg: #fffbeb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 24px 16px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1320px;
+            margin: 0 auto;
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            padding: 32px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: var(--primary);
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        h2 {
+            font-size: 1.15rem;
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 14px;
+            border-left: 4px solid var(--primary-light);
+            padding-left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 共通設定グリッド */
+        .grid-common {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+
+        input, select {
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        /* アラート・ガイドボックス */
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            margin-bottom: 20px;
+        }
+
+        .guide-box {
+            background: var(--success-bg);
+            border: 1px solid #bbf7d0;
+            color: #14532d;
+            padding: 16px 20px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+
+        .guide-title {
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            color: #14532d;
+            border-bottom: 1px dashed #86efac;
+            padding-bottom: 6px;
+        }
+
+        .guide-item {
+            margin-bottom: 10px;
+        }
+
+        .guide-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* テーブル設定 */
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .cable-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            min-width: 980px;
+        }
+
+        .cable-table th {
+            background: #f1f5f9;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #334155;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .cable-table td {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 8px;
+            vertical-align: middle;
+            background: white;
+        }
+
+        .cable-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* ボタン類 */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-add { background: #059669; color: white; }
+        .btn-add:hover { background: #047857; }
+
+        .btn-del {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .btn-del:hover { background: #dc2626; }
+
+        .btn-calc {
+            background: var(--primary);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            width: 100%;
+            box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.2);
+        }
+        .btn-calc:hover { background: var(--primary-light); }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .btn-outline:hover { background: #f1f5f9; }
+
+        /* 結果表示エリア */
+        .result-panel {
+            margin-top: 36px;
+            border-top: 2px solid var(--border);
+            padding-top: 28px;
+            display: none;
+        }
+
+        .group-card {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 28px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .group-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 16px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-weight: bold;
+            color: white;
+            font-size: 0.82rem;
+        }
+        .status-pass { background-color: var(--success); }
+        .status-fail { background-color: var(--danger); }
+
+        .res-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 0.88rem;
+            background: white;
+        }
+
+        .res-table th, .res-table td {
+            border: 1px solid var(--border);
+            padding: 10px;
+            text-align: left;
+        }
+
+        .res-table th {
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .sub-sec-title {
+            font-size: 1.0rem;
+            font-weight: bold;
+            color: #334155;
+            margin-top: 18px;
+            margin-bottom: 10px;
+        }
+
+        .advice-text {
+            font-size: 0.82rem;
+            color: var(--danger);
+            margin-top: 4px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .warn-text {
+            font-size: 0.82rem;
+            color: var(--warning);
+            margin-top: 4px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        /* 印刷スタイル */
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; padding: 0; max-width: 100%; }
+            .btn-group, .btn-calc, .header-actions, .btn-del, .btn-add, .info-box { display: none !important; }
+            .group-card { page-break-inside: avoid; border: 1px solid #94a3b8; margin-bottom: 20px; }
+            .result-panel { display: block !important; border-top: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>600V低圧配線対応 複数配管・複数回路自動選定＆内線規程判定ツール</h1>
+        <div class="header-actions">
+            <button class="btn btn-outline" onclick="window.print()">🖨️ 印刷 / PDF保存</button>
+            <button class="btn btn-outline" onclick="exportToCSV()">📥 結果CSV出力</button>
+        </div>
+    </div>
+    
+    <h2>1. 共通配管・敷設環境条件の設定</h2>
+    <div class="grid-common">
+        <div class="form-group">
+            <label for="location">敷設環境</label>
+            <select id="location">
+                <option value="indoor">屋内（露出・隠ぺい配管）</option>
+                <option value="outdoor" selected>屋外（露出・耐候性配管必須）</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="temp">周囲温度</label>
+            <select id="temp">
+                <option value="30">30°C（標準 補正1.00）</option>
+                <option value="35">35°C（補正0.94）</option>
+                <option value="40" selected>40°C（夏季屋外標準 補正0.88）</option>
+                <option value="45">45°C（補正0.82）</option>
+                <option value="50">50°C（高熱環境 補正0.75）</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="fillRate">管占積率の目標上限</label>
+            <select id="fillRate">
+                <option value="0.32" selected>32%以下（標準・屈曲あり/異種混在）</option>
+                <option value="0.48">48%以下（直線部・短尺・同一電線）</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="volDrop">許容電圧降下の目標上限</label>
+            <select id="volDrop">
+                <option value="2.0" selected>2.0%以下（標準・高圧受電/短距離）</option>
+                <option value="3.0">3.0%以下（低圧受電・標準距離）</option>
+                <option value="4.0">4.0%以下（低圧受電・長距離 60m超）</option>
+                <option value="5.0">5.0%以下（低圧受電・長距離 120m超〜200m）</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 選定ガイドライン -->
+    <div class="guide-box">
+        <div class="guide-title">📖 内線規程・技術基準に基づく判定ルール解説</div>
+        
+        <div class="guide-item">
+            <strong>【一般負荷（ヒーター・照明等）】</strong><br>
+            ・適合条件：<code>負荷電流 (I) ≤ ブレーカ定格 (IB) ≤ 電線補正許容電流 (I_derated)</code>
+        </div>
+
+        <div class="guide-item">
+            <strong>【モータ負荷（動力）の内線規程判定（第3005節 / 電技解釈148条）】</strong><br>
+            ・<strong>必要最低限の電線許容電流 (I<sub>derated</sub>)</strong>：<br>
+            &nbsp;&nbsp;モータ定格電流 I<sub>M</sub> ≤ 50A の場合： ≥ 1.25 × I<sub>M</sub> ／ I<sub>M</sub> > 50A の場合： ≥ 1.10 × I<sub>M</sub><br>
+            ・<strong>ブレーカ定格 (I<sub>B</sub>) の上限範囲</strong>：<br>
+            &nbsp;&nbsp;I<sub>M</sub> ≤ I<sub>B</sub> ≤ min(3 × I<sub>M</sub>, 2.5 × I<sub>derated</sub>)<br>
+            &nbsp;&nbsp;<span style="color:#b91c1c;">※始動突入電流による不要トリップを防ぐため、実務的には 1.5 〜 2.0 × I<sub>M</sub> 程度の選定を強く推奨します。</span>
+        </div>
+    </div>
+
+    <h2>2. 配管および個別回路の設定</h2>
+    <div class="info-box">
+        💡 <strong>同じ配管に複数回路をまとめる場合：</strong> 「＋ 回路を追加」で増設し、配管No.を揃えて設定してください（管内電線数に応じて自動で電流減少係数が適用されます）。
+    </div>
+
+    <div class="table-responsive">
+        <table class="cable-table">
+            <thead>
+                <tr>
+                    <th style="width: 9%;">配管No.</th>
+                    <th style="width: 15%;">電線・ケーブル種別</th>
+                    <th style="width: 11%;">サイズ</th>
+                    <th style="width: 13%;">電源方式</th>
+                    <th style="width: 12%;">負荷種別</th>
+                    <th style="width: 10%;">負荷電流 (A)</th>
+                    <th style="width: 12%;">ブレーカ定格 (A)</th>
+                    <th style="width: 10%;">配線長 (m)</th>
+                    <th style="width: 8%;">操作</th>
+                </tr>
+            </thead>
+            <tbody id="cable-tbody">
+                <!-- 動的追加エリア -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-add" onclick="addCableRow()">＋ 回路を追加</button>
+        <button class="btn btn-outline" onclick="clearAllRows()">🗑️ 全クリア</button>
+    </div>
+
+    <button class="btn btn-calc" onclick="calculate()">各配管グループごとの自動選定・判定を実行</button>
+
+    <div id="results" class="result-panel">
+        <h2>3. 配管グループごとの計算結果・選定比較</h2>
+        <div id="groups-container"></div>
+    </div>
+</div>
+
+<script>
+// 600V 電線・ケーブルデータベース
+const cableDB = {
+    CVT: {
+        name: '600V CVT',
+        sizes: {
+            '8':   { amp: 61,  outerD: 16.5 },
+            '14':  { amp: 88,  outerD: 18.5 },
+            '22':  { amp: 115, outerD: 21.0 },
+            '38':  { amp: 162, outerD: 24.0 },
+            '60':  { amp: 217, outerD: 28.0 },
+            '100': { amp: 298, outerD: 34.0 },
+            '150': { amp: 376, outerD: 39.0 },
+            '200': { amp: 446, outerD: 44.0 }
+        }
+    },
+    CV3: {
+        name: '600V CV(3心)',
+        sizes: {
+            '3.5': { amp: 33,  outerD: 14.0 },
+            '5.5': { amp: 44,  outerD: 15.0 },
+            '8':   { amp: 54,  outerD: 17.5 },
+            '14':  { amp: 76,  outerD: 20.0 },
+            '22':  { amp: 99,  outerD: 23.0 },
+            '38':  { amp: 139, outerD: 27.0 },
+            '60':  { amp: 186, outerD: 31.0 },
+            '100': { amp: 256, outerD: 38.0 }
+        }
+    },
+    IV: {
+        name: '600V IV電線',
+        sizes: {
+            '1.6mm': { amp: 27, outerD: 3.2 },
+            '2.0mm': { amp: 35, outerD: 3.6 },
+            '2.6mm': { amp: 48, outerD: 4.2 },
+            '5.5':   { amp: 49, outerD: 5.0 },
+            '8':     { amp: 61, outerD: 6.0 },
+            '14':    { amp: 88, outerD: 7.6 },
+            '22':    { amp: 115, outerD: 9.2 },
+            '38':    { amp: 162, outerD: 11.5 },
+            '60':    { amp: 217, outerD: 14.0 }
+        }
+    },
+    VVF: {
+        name: '600V VVF(平形)',
+        sizes: {
+            '1.6mm-2C': { amp: 18, outerD: 9.5 },
+            '2.0mm-2C': { amp: 23, outerD: 10.5 },
+            '2.6mm-2C': { amp: 32, outerD: 13.0 },
+            '1.6mm-3C': { amp: 15, outerD: 11.0 },
+            '2.0mm-3C': { amp: 20, outerD: 12.5 },
+            '2.6mm-3C': { amp: 27, outerD: 14.0 }
+        }
+    }
+};
+
+// 標準ブレーカ定格(A)
+const standardBreakerAmps = [15, 20, 30, 40, 50, 60, 75, 100, 125, 150, 175, 200, 225, 250, 300, 350, 400];
+
+// 配管データ (内断面積 mm2)
+const pipeDB = {
+    VE: [
+        { name: 'VE16', area: 254 }, { name: 'VE22', area: 380 }, { name: 'VE28', area: 615 },
+        { name: 'VE36', area: 962 }, { name: 'VE42', area: 1256 }, { name: 'VE54', area: 2042 },
+        { name: 'VE70', area: 3525 }, { name: 'VE82', area: 4778 }
+    ],
+    E: [
+        { name: 'E19', area: 240 }, { name: 'E25', area: 444 }, { name: 'E31', area: 692 },
+        { name: 'E39', area: 1035 }, { name: 'E51', area: 1870 }, { name: 'E63', area: 2970 }
+    ],
+    G: [
+        { name: 'G16', area: 211 }, { name: 'G22', area: 394 }, { name: 'G28', area: 633 },
+        { name: 'G36', area: 1011 }, { name: 'G42', area: 1346 }, { name: 'G54', area: 2206 },
+        { name: 'G70', area: 3727 }
+    ],
+    PF: [
+        { name: 'PF16', area: 201 }, { name: 'PF22', area: 380 }, { name: 'PF28', area: 615 },
+        { name: 'PF36', area: 1046 }, { name: 'PF42', area: 1385 }, { name: 'PF54', area: 2290 }
+    ]
+};
+
+// 電流減少係数（管内同一電線本数）
+function getDeratingFactor(wireCount) {
+    if (wireCount <= 1) return 1.0;
+    if (wireCount <= 3) return 0.70;
+    if (wireCount <= 4) return 0.63;
+    if (wireCount <= 6) return 0.56;
+    if (wireCount <= 10) return 0.50;
+    return 0.45;
+}
+
+let rowIdCounter = 0;
+let lastCalculationResults = null;
+
+function addCableRow(defaultPipe = '1', defaultType = 'CVT', defaultSize = '22', defaultSys = '3P3W_200', defaultLoadType = 'general', defaultAmp = 30, defaultBreaker = 40, defaultLen = 30) {
+    rowIdCounter++;
+    const tbody = document.getElementById('cable-tbody');
+    const tr = document.createElement('tr');
+    tr.id = `row-${rowIdCounter}`;
+
+    let breakerOptionsHtml = standardBreakerAmps.map(amp => 
+        `<option value="${amp}" ${amp === defaultBreaker ? 'selected' : ''}>${amp} A</option>`
+    ).join('');
+
+    tr.innerHTML = `
+        <td>
+            <select class="c-pipe" data-default="${defaultPipe}"></select>
+        </td>
+        <td>
+            <select class="c-type" onchange="updateSizeOptions(${rowIdCounter})">
+                <option value="CVT" ${defaultType==='CVT'?'selected':''}>600V CVT</option>
+                <option value="CV3" ${defaultType==='CV3'?'selected':''}>600V CV 3心</option>
+                <option value="IV" ${defaultType==='IV'?'selected':''}>600V IV電線</option>
+                <option value="VVF" ${defaultType==='VVF'?'selected':''}>600V VVF</option>
+            </select>
+        </td>
+        <td><select class="c-size" id="size-${rowIdCounter}"></select></td>
+        <td>
+            <select class="c-sys">
+                <option value="3P3W_200" ${defaultSys==='3P3W_200'?'selected':''}>三相3線 200V</option>
+                <option value="1P3W_200" ${defaultSys==='1P3W_200'?'selected':''}>単相3線 200/100V</option>
+                <option value="1P2W_200" ${defaultSys==='1P2W_200'?'selected':''}>単相2線 200V</option>
+                <option value="1P2W_100" ${defaultSys==='1P2W_100'?'selected':''}>単相2線 100V</option>
+            </select>
+        </td>
+        <td>
+            <select class="c-loadtype" onchange="autoSuggestBreaker(${rowIdCounter})">
+                <option value="general" ${defaultLoadType==='general'?'selected':''}>一般負荷</option>
+                <option value="motor" ${defaultLoadType==='motor'?'selected':''}>モータ負荷</option>
+            </select>
+        </td>
+        <td><input type="number" class="c-amp" value="${defaultAmp}" min="0.1" step="0.1" onchange="autoSuggestBreaker(${rowIdCounter})"></td>
+        <td>
+            <select class="c-breaker">
+                ${breakerOptionsHtml}
+            </select>
+        </td>
+        <td><input type="number" class="c-len" value="${defaultLen}" min="1"></td>
+        <td>
+            <button class="btn-del" onclick="removeRow(${rowIdCounter})">削除</button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+    updateSizeOptions(rowIdCounter, defaultSize);
+    updateAllPipeOptions();
+}
+
+function autoSuggestBreaker(rowId) {
+    const row = document.getElementById(`row-${rowId}`);
+    if (!row) return;
+    const ampVal = parseFloat(row.querySelector('.c-amp').value) || 0;
+    const loadType = row.querySelector('.c-loadtype').value;
+    const breakerSelect = row.querySelector('.c-breaker');
+    
+    let targetAmp = ampVal;
+    if (loadType === 'motor') {
+        targetAmp = ampVal * 1.5;
+    }
+
+    const suggested = standardBreakerAmps.find(b => b >= targetAmp) || standardBreakerAmps[standardBreakerAmps.length - 1];
+    breakerSelect.value = suggested.toString();
+}
+
+function updateAllPipeOptions() {
+    const rows = document.querySelectorAll('#cable-tbody tr');
+    const totalRows = rows.length;
+    let maxPipeNo = Math.max(5, totalRows);
+
+    rows.forEach(r => {
+        const select = r.querySelector('.c-pipe');
+        if (!select) return;
+
+        let currentVal = select.value || select.dataset.default || '1';
+        select.innerHTML = '';
+        for (let i = 1; i <= maxPipeNo; i++) {
+            const opt = document.createElement('option');
+            opt.value = i.toString();
+            opt.innerText = `配管 ${i}`;
+            if (i.toString() === currentVal) {
+                opt.selected = true;
+            }
+            select.appendChild(opt);
+        }
+    });
+}
+
+function updateSizeOptions(rowId, selectedSize = null) {
+    const row = document.getElementById(`row-${rowId}`);
+    if (!row) return;
+    const type = row.querySelector('.c-type').value;
+    const sizeSelect = row.querySelector('.c-size');
+    sizeSelect.innerHTML = '';
+
+    const sizes = cableDB[type].sizes;
+    for (let s in sizes) {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.innerText = `${s} ${type==='IV'||type==='VVF'?'':'sq'}`;
+        if (selectedSize && s === selectedSize) opt.selected = true;
+        sizeSelect.appendChild(opt);
+    }
+}
+
+function removeRow(rowId) {
+    const tbody = document.getElementById('cable-tbody');
+    if (tbody.children.length <= 1) {
+        alert('最低1つの回路設定が必要です。');
+        return;
+    }
+    const row = document.getElementById(`row-${rowId}`);
+    if (row) row.remove();
+    updateAllPipeOptions();
+}
+
+function clearAllRows() {
+    if (confirm('すべての入力回路をクリアしますか？')) {
+        document.getElementById('cable-tbody').innerHTML = '';
+        addCableRow();
+    }
+}
+
+window.onload = function() {
+    addCableRow();
+};
+
+function calculate() {
+    try {
+        const location = document.getElementById('location').value;
+        const tempVal = parseFloat(document.getElementById('temp').value);
+        const tempCoeff = tempVal == 30 ? 1.0 : tempVal == 35 ? 0.94 : tempVal == 40 ? 0.88 : tempVal == 45 ? 0.82 : 0.75;
+        const fillLimit = parseFloat(document.getElementById('fillRate').value);
+        const targetDropP = parseFloat(document.getElementById('volDrop').value);
+
+        const rows = document.querySelectorAll('#cable-tbody tr');
+        if (rows.length === 0) {
+            alert('回路が設定されていません。');
+            return;
+        }
+
+        let pipeGroups = {};
+
+        rows.forEach((r, idx) => {
+            const pNo = r.querySelector('.c-pipe').value;
+            if (!pipeGroups[pNo]) {
+                pipeGroups[pNo] = {
+                    rows: [],
+                    totalWireCount: 0,
+                    totalCableArea: 0
+                };
+            }
+
+            const type = r.querySelector('.c-type').value;
+            const sizeKey = r.querySelector('.c-size').value;
+            const sys = r.querySelector('.c-sys').value;
+            const loadType = r.querySelector('.c-loadtype').value;
+            const I = parseFloat(r.querySelector('.c-amp').value) || 0;
+            const breakerAmp = parseFloat(r.querySelector('.c-breaker').value) || 0;
+            const L = parseFloat(r.querySelector('.c-len').value) || 0;
+
+            // 配管内本数の計算（IV電線の場合は線数分カウント）
+            let wireCountInThisCircuit = 1;
+            if (type === 'IV') {
+                wireCountInThisCircuit = (sys === '3P3W_200' || sys === '1P3W_200') ? 3 : 2;
+            } else if (type === 'CVT' || type === 'CV3') {
+                wireCountInThisCircuit = 3;
+            } else {
+                wireCountInThisCircuit = 2;
+            }
+
+            pipeGroups[pNo].totalWireCount += wireCountInThisCircuit;
+
+            const cabSpec = (cableDB[type] && cableDB[type].sizes[sizeKey]) ? cableDB[type].sizes[sizeKey] : { amp: 0, outerD: 0 };
+
+            pipeGroups[pNo].rows.push({
+                circuitIdx: idx + 1,
+                type, sizeKey, sys, loadType, I, breakerAmp, L, targetDropP,
+                cabSpec, wireCountInThisCircuit
+            });
+        });
+
+        const container = document.getElementById('groups-container');
+        container.innerHTML = '';
+        lastCalculationResults = [];
+
+        Object.keys(pipeGroups).sort((a, b) => parseInt(a) - parseInt(b)).forEach(pNo => {
+            const group = pipeGroups[pNo];
+            const pipeDerating = getDeratingFactor(group.totalWireCount);
+
+            let circuitResults = [];
+            let groupArea = 0;
+            let groupOverallPass = true;
+
+            group.rows.forEach((item, subIdx) => {
+                // 配管占積率用の断面積計算 (IV電線の場合は本数分を乗算)
+                let singleArea = (Math.PI * Math.pow(item.cabSpec.outerD, 2)) / 4;
+                if (item.type === 'IV') {
+                    singleArea *= item.wireCountInThisCircuit;
+                }
+                groupArea += singleArea;
+
+                // 補正後の許容電流
+                const deratedAmp = item.cabSpec.amp * tempCoeff * (item.type === 'IV' ? pipeDerating : 1.0);
+
+                // 電圧降下計算
+                let baseV = 200;
+                let K = 30.8;
+                if (item.sys === '1P2W_100') { baseV = 100; K = 35.6; }
+                if (item.sys === '1P2W_200') { baseV = 200; K = 35.6; }
+                if (item.sys === '1P3W_200') { baseV = 100; K = 17.8; }
+                if (item.sys === '3P3W_200') { baseV = 200; K = 30.8; }
+
+                let sqNum = parseFloat(item.sizeKey);
+                if (item.sizeKey.includes('1.6mm')) sqNum = 2.01;
+                if (item.sizeKey.includes('2.0mm')) sqNum = 3.14;
+                if (item.sizeKey.includes('2.6mm')) sqNum = 5.31;
+                if (!sqNum || sqNum <= 0) sqNum = 1.0;
+
+                const dropV = (K * item.L * item.I) / (1000 * sqNum);
+                const dropP = (dropV / baseV) * 100;
+
+                // 判定計算（一般負荷 vs モータ負荷）
+                let requiredWireAmp = item.I;
+                let maxAllowedBreaker = deratedAmp;
+                let isMotor = (item.loadType === 'motor');
+
+                if (isMotor) {
+                    requiredWireAmp = (item.I <= 50) ? (item.I * 1.25) : (item.I * 1.10);
+                    maxAllowedBreaker = Math.min(3 * item.I, 2.5 * deratedAmp);
+                }
+
+                // 合否判定
+                const ampPass = deratedAmp >= requiredWireAmp;
+                const dropPass = dropP <= item.targetDropP;
+                const breakerLoadPass = item.breakerAmp >= item.I;
+                const breakerWirePass = item.breakerAmp <= maxAllowedBreaker;
+                const breakerPass = breakerLoadPass && breakerWirePass;
+
+                const isOK = ampPass && dropPass && breakerPass;
+                if (!isOK) groupOverallPass = false;
+
+                // 警告・不合格理由
+                let failReasons = [];
+                if (!ampPass) {
+                    if (isMotor) failReasons.push(`電線許容電流不足(モータ必要値${requiredWireAmp.toFixed(1)}A未満)`);
+                    else failReasons.push('電線許容電流不足');
+                }
+                if (!dropPass) failReasons.push(`電圧降下過大(${dropP.toFixed(1)}% > 上限${item.targetDropP}%)`);
+                if (!breakerLoadPass) failReasons.push('ブレーカ容量不足');
+                if (!breakerWirePass) {
+                    if (isMotor) failReasons.push(`ブレーカ過大(モータ上限${maxAllowedBreaker.toFixed(1)}A超)`);
+                    else failReasons.push('ブレーカ過大(電線保護不可)');
+                }
+
+                // アドバイス
+                let breakerAdvice = '';
+                let breakerWarn = '';
+
+                if (isMotor && breakerPass && item.breakerAmp < 1.5 * item.I) {
+                    breakerWarn = '⚠️ 始動突入電流によりトリップの恐れがあります（1.5倍〜2倍を推奨）';
+                }
+
+                if (!breakerPass || !ampPass) {
+                    let suggested = standardBreakerAmps.find(b => {
+                        let minB = isMotor ? Math.ceil(item.I * 1.5) : item.I;
+                        return b >= minB && b <= maxAllowedBreaker;
+                    });
+                    if (!suggested && isMotor) {
+                        suggested = standardBreakerAmps.find(b => b >= item.I && b <= maxAllowedBreaker);
+                    }
+
+                    if (suggested) {
+                        breakerAdvice = `推奨ブレーカ: ${suggested}A`;
+                    } else {
+                        breakerAdvice = `電線サイズアップ（太い電線への変更）が必要です`;
+                    }
+                }
+
+                const resItem = {
+                    pipeNo: pNo,
+                    cNo: subIdx + 1,
+                    globalNo: item.circuitIdx,
+                    name: `${cableDB[item.type] ? cableDB[item.type].name : item.type} ${item.sizeKey}`,
+                    loadTypeLabel: isMotor ? 'モータ(動力)' : '一般負荷',
+                    amp: item.I,
+                    breakerAmp: item.breakerAmp,
+                    deratedAmp: deratedAmp.toFixed(1),
+                    requiredWireAmp: requiredWireAmp.toFixed(1),
+                    dropV: dropV.toFixed(2),
+                    dropP: dropP.toFixed(2),
+                    breakerPass: breakerPass,
+                    isOK: isOK,
+                    reasonText: failReasons.length > 0 ? failReasons.join(' / ') : '適合',
+                    breakerAdvice: breakerAdvice,
+                    breakerWarn: breakerWarn
+                };
+
+                circuitResults.push(resItem);
+                lastCalculationResults.push(resItem);
+            });
+
+            group.totalCableArea = groupArea;
+            const reqPipeArea = groupArea / fillLimit;
+
+            function getFitPipe(pipeTypeKey) {
+                for (let p of pipeDB[pipeTypeKey]) {
+                    if (p.area >= reqPipeArea) {
+                        const fill = ((groupArea / p.area) * 100).toFixed(1);
+                        return { name: p.name, fill: fill };
+                    }
+                }
+                return { name: 'サイズ超過(複数配管分割を推奨)', fill: '-' };
+            }
+
+            const fitVE = getFitPipe('VE');
+            const fitE  = getFitPipe('E');
+            const fitG  = getFitPipe('G');
+            const fitPF = getFitPipe('PF');
+
+            let rowsHtml = circuitResults.map(res => `
+                <tr>
+                    <td>回路 ${res.cNo} (No.${res.globalNo})</td>
+                    <td><strong>${res.name}</strong></td>
+                    <td>${res.loadTypeLabel}</td>
+                    <td>${res.amp} A</td>
+                    <td>${res.breakerAmp} A</td>
+                    <td>${res.deratedAmp} A <br><small style="color:#64748b;">(必要:${res.requiredWireAmp}A)</small></td>
+                    <td>${res.dropV} V (${res.dropP} %)</td>
+                    <td>
+                        <span class="status-badge ${res.isOK ? 'status-pass' : 'status-fail'}">
+                            ${res.isOK ? '適合' : '不適合'}
+                        </span>
+                    </td>
+                    <td>
+                        <div>${res.reasonText}</div>
+                        ${res.breakerAdvice ? `<div class="advice-text">💡 ${res.breakerAdvice}</div>` : ''}
+                        ${res.breakerWarn ? `<div class="warn-text">${res.breakerWarn}</div>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+
+            let cardHtml = `
+                <div class="group-card">
+                    <div class="group-title">
+                        <span>配管 No. ${pNo} （収容回路数: ${group.rows.length}回路 / 累計管内電線数: ${group.totalWireCount}本）</span>
+                        <span class="status-badge ${groupOverallPass ? 'status-pass' : 'status-fail'}">
+                            ${groupOverallPass ? 'グループ判定：合格' : '要確認（不合格回路あり）'}
+                        </span>
+                    </div>
+
+                    <div class="sub-sec-title">■ 回路別判定明細（電流減少係数: ${pipeDerating.toFixed(2)}）</div>
+                    <div class="table-responsive">
+                        <table class="res-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%;">回路</th>
+                                    <th style="width: 16%;">電線・ケーブル</th>
+                                    <th style="width: 10%;">負荷種別</th>
+                                    <th style="width: 8%;">負荷電流</th>
+                                    <th style="width: 8%;">ブレーカ</th>
+                                    <th style="width: 11%;">補正許容電流</th>
+                                    <th style="width: 10%;">電圧降下</th>
+                                    <th style="width: 8%;">判定</th>
+                                    <th>詳細・改善アドバイス</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="sub-sec-title">■ 推奨配管サイズ選定（総電線・ケーブル断面積: ${groupArea.toFixed(1)} mm² / 目標占積率上限: ${(fillLimit * 100).toFixed(0)}%）</div>
+                    <div class="table-responsive">
+                        <table class="res-table">
+                            <thead>
+                                <tr>
+                                    <th>配管規格・種類</th>
+                                    <th>推奨最小配管サイズ</th>
+                                    <th>計算管占積率 (%)</th>
+                                    <th>判定・備考</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>VE管</strong> (硬質ポリ塩化ビニル管)</td>
+                                    <td><strong>${fitVE.name}</strong></td>
+                                    <td>${fitVE.fill} %</td>
+                                    <td>${fitVE.fill !== '-' ? '内線規程適合' : '配管分割推奨'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>E管</strong> (ねじなし電線管)</td>
+                                    <td><strong>${fitE.name}</strong></td>
+                                    <td>${fitE.fill} %</td>
+                                    <td>${fitE.fill !== '-' ? '内線規程適合' : '配管分割推奨'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>G管</strong> (厚鋼電線管)</td>
+                                    <td><strong>${fitG.name}</strong></td>
+                                    <td>${fitG.fill} %</td>
+                                    <td>${fitG.fill !== '-' ? '内線規程適合' : '配管分割推奨'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>PF管</strong> (合成樹脂製可とう管)</td>
+                                    <td><strong>${fitPF.name}</strong></td>
+                                    <td>${fitPF.fill} %</td>
+                                    <td>${fitPF.fill !== '-' ? '内線規程適合' : '配管分割推奨'}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML += cardHtml;
+        });
+
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+    } catch (err) {
+        alert('計算処理中にエラーが発生しました: ' + err.message);
+        console.error(err);
+    }
+}
+
+function exportToCSV() {
+    if (!lastCalculationResults || lastCalculationResults.length === 0) {
+        alert('先に「各配管グループごとの自動選定・判定を実行」ボタンをクリックして計算を実行してください。');
+        return;
+    }
+
+    let csvContent = "\uFEFF"; // UTF-8 BOM付き（Excel文字化け防止）
+    csvContent += "配管No,回路No,全回路通しNo,電線・ケーブル,負荷種別,負荷電流(A),ブレーカ定格(A),補正許容電流(A),必要許容電流(A),電圧降下(V),電圧降下(%),判定,詳細・不適合理由,アドバイス\n";
+
+    lastCalculationResults.forEach(r => {
+        let row = [
+            `"配管${r.pipeNo}"`,
+            `"回路${r.cNo}"`,
+            `"${r.globalNo}"`,
+            `"${r.name}"`,
+            `"${r.loadTypeLabel}"`,
+            `"${r.amp}"`,
+            `"${r.breakerAmp}"`,
+            `"${r.deratedAmp}"`,
+            `"${r.requiredWireAmp}"`,
+            `"${r.dropV}"`,
+            `"${r.dropP}"`,
+            `"${r.isOK ? '適合' : '不適合'}"`,
+            `"${r.reasonText.replace(/"/g, '""')}"`,
+            `"${(r.breakerAdvice + ' ' + r.breakerWarn).trim().replace(/"/g, '""')}"`
+        ];
+        csvContent += row.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "低圧配線・配管選定判定結果.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+</body>
+</html>
